@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags  %}
+
+{% block title %}Tarefas Pendentes{% endblock %}
+
+{% block content %}
+<div class="h-100 p-5 bg-light border rounded-3"> 
+    <h1> Adicionar Tarefa</h1>
+    <form method="post">
+        {%csrf_token%}
+        {{form|crispy}}
+        <br>
+        <input class="btn btn-success" type="submit" value="Salvar">
+    </form>
+
+
+    <h1>Tarefas Pendentes:</h1>
+    <div class="list-group">
+        {% for tarefa in tarefas_pendentes %}
+           
+            {% if tarefa.categoria == 'urgente' %}
+                {% with item_class='list-group-item-primary' %} 
+                {% endwith %}
+            {% elif tarefa.categoria == 'importante' %}
+                {% with item_class='list-group-item-danger' %} 
+                {% endwith %}
+            {% else %} 
+                {% with item_class='list-group-item' %} 
+                {% endwith %}
+            {% endif %}
+
+            <button type="button" class="list-group-item {{ item_class }} list-group-item-action"
+                    data-bs-toggle="modal" data-bs-target="#modal{{ tarefa.id }}">
+                <h5>{{ tarefa.descricao }}</h5>
+                <small>Criado em: {{ tarefa.criacao|date:"d/m/Y" }} às {{ tarefa.criacao|time:"H:i" }}</small><br>
+                <small>Categoria: {{ tarefa.categoria|capfirst }}</small>
+            </button>
+
+            <div class="modal fade" id="modal{{ tarefa.id }}" tabindex="-1" aria-labelledby="modalLabel{{ tarefa.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabel{{ tarefa.id }}">{{ tarefa.descricao }} | {{ tarefa.categoria|capfirst }} </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                         <p>
+                           <button type="button" class="btn btn-primary" onclick="window.location.href='{% url 'concluir_tarefa' tarefa.id %}'">Concluir</button>
+                           <button type="button" class="btn btn-danger" onclick="window.location.href='{% url 'excluir_tarefa' tarefa.id %}'">Excluir</button>
+                           <button type="button" class="btn btn-warning" onclick="window.location.href='{% url 'adiar_tarefa' tarefa.id %}'">Adiar</button>
+                           <button type="button" class="btn btn-primary" onclick="window.location.href='{% url 'editar_tarefa' tarefa.id %}'">Editar</button>
+                         </p>
+                            <p><strong>Descrição Completa:</strong> {{ tarefa.descricao }}</p>
+                            <p><strong>Criado em:</strong> {{ tarefa.criacao|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Categoria:</strong> {{ tarefa.categoria|capfirst }}</p>
+                            <p><strong>Status:</strong> {{ tarefa.status|capfirst }}</p>
+                            <hr>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>Nenhuma tarefa pendente encontrada.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
